@@ -6,6 +6,7 @@ from time import perf_counter
 
 from utils import log
 
+
 class State(Enum):
     OPEN = 1
     CLOSE = 2
@@ -14,7 +15,8 @@ class State(Enum):
 
 class CoopDoor():
 
-    def __init__(self, motor_forward, motor_backward, open_sensor, close_sensor, max_time=45):
+    def __init__(self, motor_forward, motor_backward, open_sensor,
+                 close_sensor, max_time=45):
         self.max_time = max_time
         self.motor = Motor(motor_forward, motor_backward)
         self.open_sensor = DigitalInputDevice(open_sensor)
@@ -23,7 +25,9 @@ class CoopDoor():
 
     def close(self):
         start = perf_counter()
-        if self.determine_state() != State.CLOSE:
+        self.state = self.determine_state()
+        log.debug(f"door.open() state: {self.state}")
+        if self.state != State.CLOSE:
             while (self.state != State.CLOSE) & ((perf_counter() - start) < self.max_time):
                 self.motor.forward()
                 self.state = self.determine_state()

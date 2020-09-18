@@ -1,0 +1,6 @@
+{
+"MAX_TIME": 5,
+"CHICKENS": ["Crispy", "Creamy", "Salty", "Spicy", "Saucy"],
+"BUFFER_TIME": 120,
+"RFID_KEY": [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF]
+}
