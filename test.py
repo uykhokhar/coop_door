@@ -37,26 +37,29 @@ i = 0
 display.display(i)
 
 log.debug("checking state")
-while True:
-    state = main_door.determine_state()
+# while i < 10:
+#     state = main_door.determine_state()
+#
+#     if state == State.OPEN:
+#         log.debug('state open')
+#         open_led.on()
+#         close_led.off()
+#     elif state == State.CLOSE:
+#         log.debug('state closed')
+#         open_led.off()
+#         close_led.on()
+#     else:
+#         log.debug('state indeterminate')
+#         open_led.blink()
+#         close_led.blink()
+#
+#     if state != current_state:
+#         current_state = state
+#         log.debug(f"state changed to {current_state}")
+#
+#     display.display(i)
+#     i += 1
+#     sleep(1)
 
-    if state == State.OPEN:
-        log.debug('state open')
-        open_led.on()
-        close_led.off()
-    elif state == State.CLOSE:
-        log.debug('state closed')
-        open_led.off()
-        close_led.on()
-    else:
-        log.debug('state indeterminate')
-        open_led.blink()
-        close_led.blink()
-
-    if state != current_state:
-        current_state = state
-        log.debug(f"state changed to {current_state}")
-
-    display.display(i)
-    i += 1
-    sleep(5)
+display.loop()
+display.cleanup()
