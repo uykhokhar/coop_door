@@ -1,6 +1,10 @@
 {
 "MAX_TIME": 5,
-"CHICKENS": ["Crispy", "Creamy", "Salty", "Spicy", "Saucy"],
+"CHICKENS": ["Creamy", "Crunchy", "Salty", "Saucy", "Spicy"],
 "BUFFER_TIME": 120,
-"RFID_KEY": [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF]
+"CHECKIN_BUFFER": 30,
+"LOC_CITY": "Cleveland",
+"LOC_LATITUDE": 41.4667,
+"LOC_LONGITUDE": -81.6667,
+"LOC_TIMEZONE": "US/Eastern"
 }

@@ -11,7 +11,7 @@ import time
 LSBFIRST = 1
 MSBFIRST = 2
 # define the pins for 74HC595
-dataPin   = 7   #GPIO4   # DS Pin of 74HC595(Pin14)
+dataPin   = 11   #GPIO4   # DS Pin of 74HC595(Pin14)
 latchPin  = 13  #GPIO27    # ST_CP Pin of 74HC595(Pin12)
 clockPin = 15   #GPIO22    # CH_CP Pin of 74HC595(Pin11)
 # SevenSegmentDisplay display the character "0"- "F" successively
