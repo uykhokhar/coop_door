@@ -1,7 +1,8 @@
 {
-"MAX_TIME": 5,
+"MAX_TIME_OPEN": 140,
+"MAX_TIME_CLOSE": 70,
 "CHICKENS": ["Creamy", "Crunchy", "Salty", "Saucy", "Spicy"],
-"BUFFER_TIME": 120,
+"BUFFER_TIME": 30,
 "CHECKIN_BUFFER": 30,
 "LOC_CITY": "Cleveland",
 "LOC_LATITUDE": 41.4667,

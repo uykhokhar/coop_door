@@ -1,4 +1,3 @@
-
 from enum import Enum
 from gpiozero import DigitalInputDevice, Motor
 from signal import pause
@@ -16,8 +15,9 @@ class State(Enum):
 class CoopDoor():
 
     def __init__(self, motor_forward, motor_backward, open_sensor,
-                 close_sensor, max_time=45):
-        self.max_time = max_time
+                 close_sensor, max_time_open=60, max_time_close=45):
+        self.max_time_open = max_time_open
+        self.max_time_close = max_time_close
         self.motor = Motor(motor_forward, motor_backward)
         self.open_sensor = DigitalInputDevice(open_sensor)
         self.close_sensor = DigitalInputDevice(close_sensor)
@@ -28,7 +28,8 @@ class CoopDoor():
         self.determine_state()
         log.debug(f"door.close() state: {self.state}")
         if self.state != State.CLOSE:
-            while (self.state != State.CLOSE) & ((perf_counter() - start) < self.max_time):
+            while (self.state != State.CLOSE) \
+                    & ((perf_counter() - start) < self.max_time_close):
                 self.motor.forward()
                 self.determine_state()
             else:
@@ -40,7 +41,8 @@ class CoopDoor():
         self.determine_state()
         log.debug(f"door.open() state: {self.state}")
         if self.state != State.OPEN:
-            while (self.state != State.OPEN) & ((perf_counter() - start) < self.max_time):
+            while (self.state != State.OPEN) \
+                    & ((perf_counter() - start) < self.max_time_open):
                 self.motor.backward()
                 self.determine_state()
             else:

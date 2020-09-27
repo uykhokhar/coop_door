@@ -41,9 +41,6 @@ class SevenSegmentDisplay():
                8: 0x80,
                9: 0x90}
 
-    num = [0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xf8,0x80,0x90,0x88,0x83,0xc6,0xa1,0x86,0x8e]
-    LSBFIRST = 1
-
     def __init__(self, data_pin, latch_pin, clock_pin):
         self.data_pin = data_pin
         self.latch_pin = latch_pin
@@ -64,17 +61,3 @@ class SevenSegmentDisplay():
 
     def cleanup(self):
         GPIO.cleanup()
-
-
-    def shiftOut(self, val):
-        for i in range(0,8):
-            GPIO.output(self.clock_pin,GPIO.LOW);
-            GPIO.output(self.data_pin,(0x01&(val>>i)==0x01) and GPIO.HIGH or GPIO.LOW)
-            GPIO.output(self.clock_pin,GPIO.HIGH);
-
-    def loop(self):
-        for i in range(0,len(self.num)):
-            GPIO.output(self.latch_pin,GPIO.LOW)
-            self.shiftOut(self.num[i])  # Send serial data to 74HC595
-            GPIO.output(self.latch_pin,GPIO.HIGH)
-            sleep(2)
