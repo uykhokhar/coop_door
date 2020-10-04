@@ -11,6 +11,7 @@ from door import log
 from door.coop_door import CoopDoor, State
 from door.counter import Counter
 from door.rfid import RFID
+from door.servo import Servo
 from door.utils import pins, config
 
 
@@ -30,7 +31,7 @@ main_door = CoopDoor(pins["MOTOR_MAIN_1"], pins["MOTOR_MAIN_2"],
 counter = Counter(config["CHICKENS"], pins['SEG_DATA'], pins['SEG_LATCH'],
                   pins['SEG_CLOCK'])
 reader = RFID()
-food_servo = Servo(pins['FOOD_SERVO'], close_angle=150)
+food_servo = Servo(pins['FOOD_SERVO'], open_angle=135, close_angle=65)
 city = LocationInfo(name=config["LOC_CITY"],
                     region='USA',
                     timezone=config["LOC_TIMEZONE"],
@@ -103,7 +104,7 @@ def loop():
         close_end_time = s['sunset'] + timedelta(minutes=BUFFER_TIME)
         checkin_start_time = s['sunset'] - timedelta(minutes=CHECKIN_BUFFER)
         checkin_end_time = s['sunset']
-        now = datetime.now()
+        now = datetime.now(city.tzinfo)
 
     ######## RFID ##########
         if (checkin_end_time > now > checkin_start_time) \
@@ -117,21 +118,20 @@ def loop():
                 log.info("all_inside")
                 sleep(60)
                 close_door()
+                food_servo.close()
                 # log/alert that door closed b/c all inside
 
     ######## SCHEDULE ##########
         if (open_end_time > now > open_start_time) \
                 & (main_door.state != State.OPEN):
-            log.info("in open period")
+            log.info(f"in open period: {open_start_time} - {open_end_time}")
             open_door()
             counter.reset()
             food_servo.open()  # open
 
         if (close_end_time > now > close_start_time) \
                 & (main_door.state != State.CLOSE):
-            log.info("in sunset time")
-            log.info(f"close_start_time: {close_start_time}")
-            log.info(f"close_end_time: {close_end_time}")
+            log.info(f"in sunset time: {close_start_time} - {close_end_time}")
             close_door()
             food_servo.close()  # close
             # alert that door closed with schedule
