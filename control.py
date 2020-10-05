@@ -43,7 +43,6 @@ log.debug(f"initial door state: {main_door.state}")
 ########### METHODS #################
 
 def open_door():
-    # TODO: reset counter of chickens
     open_led.blink()
     close_led.off()
     if main_door.open() == State.OPEN:
@@ -61,7 +60,6 @@ def open_door():
 
 
 def close_door():
-    # TODO: if all chickens not in, send message
     close_led.blink()
     open_led.off()
     if main_door.close() == State.CLOSE:
@@ -76,7 +74,6 @@ def close_door():
                      priority=2)  # priority=2 sometimes not working
         sleep(3)
         notification("Door intermediate state while closing", priority=1)  # alert level high
-        # todo: Alert that door didn't close
 
 
 def cleanup():
@@ -122,38 +119,36 @@ def loop():
             if name is not None:
                 counter.checkin([name])
                 log.info(f'checkin {name}')
+                notification(f"{name} checked-in")
             if counter.all_inside():
                 log.info("all_inside")
+                notification("All chickens checked-in")
                 sleep(60)
                 close_door()
                 food_servo.close()
-                # log/alert that door closed b/c all inside
 
     ######## SCHEDULE ##########
         if (open_end_time > now > open_start_time) \
                 & (main_door.state != State.OPEN):
-            s_ost = open_start_time.strfytime("%H:%M")
+            s_ost = open_start_time.strftime("%H:%M")
             s_oet = open_end_time.strftime("%H:%M")
             message = f"In scheduled open time: {s_ost} - {s_oet}"
             log.debug(message)
             notification(message)
             open_door()
             counter.reset()
-            food_servo.open()  # open
+            food_servo.open()
 
         if (close_end_time > now > close_start_time) \
                 & (main_door.state != State.CLOSE):
-            s_cst = close_start_time.strfytime("%H:%M")
+            s_cst = close_start_time.strftime("%H:%M")
             s_cet = close_end_time.strftime("%H:%M")
             message = (f"In scheduled close time: {s_cst} - {s_cet}. "
                        f"{counter.which_inside()}")
             log.debug(message)
             notification(message, priority=1)
             close_door()
-            food_servo.close()  # close
-            # alert that door closed with schedule
-
-        # sleep(120)  # only if RFID reading not setup
+            food_servo.close()
 
 
 if __name__ == '__main__':
