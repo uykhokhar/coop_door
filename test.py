@@ -1,5 +1,10 @@
 #from door.rfid import write_tag
-from door.servo import Servo
+# from door.servo import Servo
+import urllib
+import http.client
+from astral import LocationInfo
+from astral.sun import sun
+from datetime import date, datetime, timedelta
 import time
 from time import sleep
 
@@ -9,24 +14,108 @@ from gpiozero import AngularServo
 from RPi import GPIO
 from signal import pause
 
-from door import log
-# from door.coop_door import CoopDoor, State
-# from door.counter import Counter, SevenSegmentDisplay
-# from door.rfid import read_tag
-from door.utils import pins, config
+# from door import log
+# # from door.coop_door import CoopDoor, State
+from door.counter import Counter
+# # from door.rfid import read_tag
+from door.utils import pins, config, notification
+
+config = {
+    "MAX_TIME_OPEN": 140,
+    "MAX_TIME_CLOSE": 70,
+    "CHICKENS": ["Creamy", "Crunchy", "Salty", "Saucy", "Spicy"],
+    "BUFFER_TIME": 30,
+    "CHECKIN_BUFFER": 30,
+    "LOC_CITY": "Cleveland",
+    "LOC_LATITUDE": 41.4667,
+    "LOC_LONGITUDE": -81.6667,
+    "LOC_TIMEZONE": "US/Eastern"
+}
+
+counter = Counter(config["CHICKENS"], pins['SEG_DATA'], pins['SEG_LATCH'],
+                  pins['SEG_CLOCK'])
+
+notification(counter.which_inside())
+
+counter.checkin(['Creamy', "Crunchy"])
+
+notification(f"test priority=2 {counter.which_inside()}", priority=2)
+
+sleep(3)
+
+notification(f"test priority=1 {counter.which_inside()}", priority=1)
 
 
-GPIO.setmode(GPIO.BCM)
+print(counter.all_inside())
+
+counter.cleanup()
+
+# GPIO.setmode(GPIO.BCM)
+#
+#
+# BUFFER_TIME = config["BUFFER_TIME"]  # minutes
+# CHICKENS = config["CHICKENS"]
+# CHECKIN_BUFFER = config["CHECKIN_BUFFER"]
+#
+# open_button = Button(pins["OPEN_BUTTON"])
+# close_button = Button(pins["CLOSE_BUTTON"])
+# open_led = LED(pins["OPEN_LED"])
+# close_led = LED(pins["CLOSE_LED"])
 
 
-BUFFER_TIME = config["BUFFER_TIME"]  # minutes
-CHICKENS = config["CHICKENS"]
-CHECKIN_BUFFER = config["CHECKIN_BUFFER"]
+# time
 
-open_button = Button(pins["OPEN_BUTTON"])
-close_button = Button(pins["CLOSE_BUTTON"])
-open_led = LED(pins["OPEN_LED"])
-close_led = LED(pins["CLOSE_LED"])
+# city = LocationInfo(name=config["LOC_CITY"],
+#                     region='USA',
+#                     timezone=config["LOC_TIMEZONE"],
+#                     latitude=config["LOC_LATITUDE"],
+#                     longitude=config["LOC_LONGITUDE"])
+#
+# # , tzinfo=city.tzinfo
+# s = sun(city.observer, date=datetime.now(city.tzinfo), tzinfo=city.tzinfo)
+# open_start_time = s['sunrise'] + timedelta(hours=1)
+# open_end_time = s['sunrise'] + timedelta(hours=1, minutes=config["BUFFER_TIME"])
+# close_start_time = s['sunset']
+# close_end_time = s['sunset'] + timedelta(minutes=config["BUFFER_TIME"])
+# checkin_start_time = s['sunset'] - timedelta(minutes=config["CHECKIN_BUFFER"])
+# checkin_end_time = s['sunset']
+# now = datetime.now(city.tzinfo)
+# now2 = datetime.now(city.tzinfo) - timedelta(hours=2, minutes=10)
+#
+# if (open_end_time > now2 > open_start_time):
+#     print("in open")
+# if (checkin_end_time > now2 > checkin_start_time):
+#     print("in checkin")
+# if (close_end_time > now2 > close_start_time):
+#     print("in close")
+#
+# today = datetime.now(city.tzinfo).strftime("%m/%d/%Y")
+#
+# print(f"today {today}")
+#
+# vals = {
+#     "today by city": datetime.now(city.tzinfo),
+#     "sunrise": s['sunrise'],
+#     "open_start_time": open_start_time, "open_end_time": open_end_time,
+#     "sunset": s['sunset'],
+#     "close_start_time": close_start_time, "close_end_time": close_end_time,
+#     "checkin_start_time": checkin_start_time, "checkin_end_time": checkin_end_time,
+#     "now": now,
+#     "now2": now2}
+# for k, v in vals.items():
+#     print("{}: {}".format(k, v.strftime("%m/%d/%Y, %H:%M:%S")))
+#
+#
+# conn = http.client.HTTPSConnection("api.pushover.net:443")
+# conn.request("POST", "/1/messages.json",
+#              urllib.parse.urlencode({
+#                  "token": "abwj3qh4879xr862wgippumitfywrs",
+#                  "user": "ucrggbq8tmbuv5wxa71rycvf2cqrmt",
+#                  "message": "Test from coop"
+#              }), {"Content-type": "application/x-www-form-urlencoded"})
+# print(conn.getresponse())
+#
+
 
 #
 # servo = AngularServo(18, initial_angle=None, min_angle=-90, max_angle=90,
@@ -97,16 +186,16 @@ close_led = LED(pins["CLOSE_LED"])
 
 # TEST SERVO CLASS
 
-servo = Servo(18, close_angle=150)
-
-
-open_button.when_pressed = servo.open
-close_button.when_pressed = servo.close
-
-servo.open()
-servo.close()
-
-pause()
+# servo = Servo(18, close_angle=150)
+#
+#
+# open_button.when_pressed = servo.open
+# close_button.when_pressed = servo.close
+#
+# servo.open()
+# servo.close()
+#
+# pause()
 
 
 # print("min max test")

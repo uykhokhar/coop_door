@@ -12,14 +12,10 @@ from door.coop_door import CoopDoor, State
 from door.counter import Counter
 from door.rfid import RFID
 from door.servo import Servo
-from door.utils import pins, config
+from door.utils import pins, config, notification
 
 
 ########### PARAMETERS #################
-
-BUFFER_TIME = config["BUFFER_TIME"]  # minutes
-CHECKIN_BUFFER = config["CHECKIN_BUFFER"]
-
 open_button = Button(pins["OPEN_BUTTON"])
 close_button = Button(pins["CLOSE_BUTTON"])
 open_led = LED(pins["OPEN_LED"])
@@ -52,11 +48,16 @@ def open_door():
     close_led.off()
     if main_door.open() == State.OPEN:
         log.info("door control: opened")
+        notification("Door opened")
         open_led.on()
     else:
         open_led.blink()
         close_led.blink()
         log.debug(f"open_door(): {main_door.state}")
+        notification("Door in intermediate state while opening",
+                     priority=2)  # priority=2 sometimes not working
+        sleep(3)
+        notification("Door in intermediate state while opening", priority=1)
 
 
 def close_door():
@@ -66,10 +67,15 @@ def close_door():
     if main_door.close() == State.CLOSE:
         close_led.on()
         log.info("door control: closed")
+        notification("Door closed")
     else:
         open_led.blink()
         close_led.blink()
         log.info(f"close_door(): {main_door.state}")
+        notification("Door intermediate state while closing",
+                     priority=2)  # priority=2 sometimes not working
+        sleep(3)
+        notification("Door intermediate state while closing", priority=1)  # alert level high
         # todo: Alert that door didn't close
 
 
@@ -97,19 +103,21 @@ close_button.when_pressed = close_door
 
 def loop():
     while True:
-        s = sun(city.observer, date=date.today(), tzinfo=city.tzinfo)
+        # local time used to account for daylight savings time in calculation
+        # of local sunset/sunrise
+        s = sun(city.observer, date=datetime.now(city.tzinfo), tzinfo=city.tzinfo)
         open_start_time = s['sunrise'] + timedelta(hours=1)
-        open_end_time = s['sunrise'] + timedelta(hours=1, minutes=BUFFER_TIME)
+        open_end_time = s['sunrise'] + timedelta(hours=1, minutes=config["BUFFER_TIME"])
         close_start_time = s['sunset']
-        close_end_time = s['sunset'] + timedelta(minutes=BUFFER_TIME)
-        checkin_start_time = s['sunset'] - timedelta(minutes=CHECKIN_BUFFER)
+        close_end_time = s['sunset'] + timedelta(minutes=config["BUFFER_TIME"])
+        checkin_start_time = s['sunset'] - timedelta(minutes=config["CHECKIN_BUFFER"])
         checkin_end_time = s['sunset']
         now = datetime.now(city.tzinfo)
 
     ######## RFID ##########
         if (checkin_end_time > now > checkin_start_time) \
                 & (main_door.state != State.CLOSE):
-            log.info("in checkin time")
+            log.debug("in checkin time")
             name = reader.read_tag(timeout=10)  # wait timeout or return name
             if name is not None:
                 counter.checkin([name])
@@ -124,14 +132,23 @@ def loop():
     ######## SCHEDULE ##########
         if (open_end_time > now > open_start_time) \
                 & (main_door.state != State.OPEN):
-            log.info(f"in open period: {open_start_time} - {open_end_time}")
+            s_ost = open_start_time.strfytime("%H:%M")
+            s_oet = open_end_time.strftime("%H:%M")
+            message = f"In scheduled open time: {s_ost} - {s_oet}"
+            log.debug(message)
+            notification(message)
             open_door()
             counter.reset()
             food_servo.open()  # open
 
         if (close_end_time > now > close_start_time) \
                 & (main_door.state != State.CLOSE):
-            log.info(f"in sunset time: {close_start_time} - {close_end_time}")
+            s_cst = close_start_time.strfytime("%H:%M")
+            s_cet = close_end_time.strftime("%H:%M")
+            message = (f"In scheduled close time: {s_cst} - {s_cet}. "
+                       f"{counter.which_inside()}")
+            log.debug(message)
+            notification(message, priority=1)
             close_door()
             food_servo.close()  # close
             # alert that door closed with schedule
