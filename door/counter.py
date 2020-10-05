@@ -27,6 +27,14 @@ class Counter():
     def all_inside(self):
         return sum(self.chickens.values()) == len(self.chickens)
 
+    def which_inside(self):
+        inside = [k for k, v in self.chickens.items() if v]
+        outside = [k for k, v in self.chickens.items() if not v]
+        return f"Checked in: {inside}. Not checked in: {outside}"
+
+    def cleanup(self):
+        self.segment.cleanup()
+
 
 class SevenSegmentDisplay():
 
