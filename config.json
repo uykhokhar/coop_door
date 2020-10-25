@@ -1,6 +1,6 @@
 {
 "MAX_TIME_OPEN": 140,
-"MAX_TIME_CLOSE": 70,
+"MAX_TIME_CLOSE": 75,
 "CHICKENS": ["Creamy", "Crunchy", "Salty", "Saucy", "Spicy"],
 "BUFFER_TIME": 30,
 "CHECKIN_BUFFER": 30,

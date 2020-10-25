@@ -35,9 +35,9 @@ city = LocationInfo(name=config["LOC_CITY"],
                     longitude=config["LOC_LONGITUDE"])
 
 
-log.debug(f"initial door open sensor value: {main_door.open_sensor.value}")
-log.debug(f"initial door close sensor value: {main_door.close_sensor.value}")
-log.debug(f"initial door state: {main_door.state}")
+log.info(f"initial door open sensor value: {main_door.open_sensor.value}")
+log.info(f"initial door close sensor value: {main_door.close_sensor.value}")
+log.info(f"initial door state: {main_door.state}")
 
 
 ########### METHODS #################
@@ -103,8 +103,8 @@ def loop():
         # local time used to account for daylight savings time in calculation
         # of local sunset/sunrise
         s = sun(city.observer, date=datetime.now(city.tzinfo), tzinfo=city.tzinfo)
-        open_start_time = s['sunrise'] + timedelta(hours=1)
-        open_end_time = s['sunrise'] + timedelta(hours=1, minutes=config["BUFFER_TIME"])
+        open_start_time = s['sunrise'] + timedelta(minutes=45)
+        open_end_time = s['sunrise'] + timedelta(minutes=45 + config["BUFFER_TIME"])
         close_start_time = s['sunset']
         close_end_time = s['sunset'] + timedelta(minutes=config["BUFFER_TIME"])
         checkin_start_time = s['sunset'] - timedelta(minutes=config["CHECKIN_BUFFER"])
@@ -140,7 +140,7 @@ def loop():
             food_servo.open()
 
         if (close_end_time > now > close_start_time) \
-                & (main_door.state != State.CLOSE):
+                & (main_door.state == State.OPEN):
             s_cst = close_start_time.strftime("%H:%M")
             s_cet = close_end_time.strftime("%H:%M")
             message = (f"In scheduled close time: {s_cst} - {s_cet}. "
@@ -152,7 +152,7 @@ def loop():
 
 
 if __name__ == '__main__':
-    print('Program is starting...')
+    log.info('Program is starting...')
     try:
         loop()
     except KeyboardInterrupt:
